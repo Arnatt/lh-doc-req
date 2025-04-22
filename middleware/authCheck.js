@@ -28,3 +28,7 @@ exports.authCheck = async (req, res, next) => {
         res.status(401).json({ message: 'Invalid or expired token' });
     }
 };
+
+// exports.adminCheck = async (req, res) => {
+
+// }

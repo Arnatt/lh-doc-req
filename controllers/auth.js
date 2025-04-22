@@ -52,6 +52,32 @@ exports.login = async (req, res) => {
     }
 }
 
+exports.registerAdmin = async (req, res) => {
+    try {
+        const { 
+            username, 
+            password,
+             no_card_id, 
+             fname, 
+             lname } = req.body
+        
+        // check user
+        const [existing] = await db.execute(
+            'SELECT * FROM admin WHERE username = ?',
+            [username]
+        );
+        
+        if (existing.length > 0) {
+            return res.status(400).json({ message: 'Username already exists' });
+        }
+
+
+    } catch (error) {
+        
+    }
+}
+
+
 exports.loginAdmin = async (req, res) => {
     try {
         res.send('Admin Login Page - Controller');
