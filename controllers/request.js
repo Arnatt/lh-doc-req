@@ -192,21 +192,21 @@ exports.deleteRequest = async (req, res) => {
     }
 }
 
-exports.listAllRequest = async (req, res) => {
-    try {
-        const { count } = req.params;
+// exports.listAllRequest = async (req, res) => {
+//     try {
+//         const { count } = req.params;
         
-        const [rows] = await db.promise().execute(
-            'SELECT * FROM request ORDER BY request_date DESC LIMIT ?', [parseInt(count)]
-        )
+//         const [rows] = await db.promise().execute(
+//             'SELECT * FROM request ORDER BY request_date DESC LIMIT ?', [parseInt(count)]
+//         )
 
-        res.status(200).json({
-            message: "Fetch requests successfully",
-            data: rows
-        });
+//         res.status(200).json({
+//             message: "Fetch requests successfully",
+//             data: rows
+//         });
 
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: 'Server Error' });
-    }
-}
+//     } catch (error) {
+//         console.log(error);
+//         res.status(500).json({ message: 'Server Error' });
+//     }
+// }
