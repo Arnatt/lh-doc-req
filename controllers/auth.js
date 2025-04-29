@@ -99,7 +99,10 @@ exports.loginAdmin = async (req, res) => {
         const payload = {
             adminId: admin.admin_id,
             username: admin.username,
-            isAdmin: true // เพิ่ม flag เพื่อระบุว่าเป็นผู้ดูแลระบบ
+            role: admin.role,
+            fname: admin.fname, // เพิ่ม fname
+            lname: admin.lname, // เพิ่ม lname
+            isAdmin: true// เพิ่ม flag เพื่อระบุว่าเป็นผู้ดูแลระบบ
         };
 
         // สร้าง token

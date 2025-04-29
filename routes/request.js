@@ -5,9 +5,9 @@ const { authCheck } = require('../middleware/authCheck')
 
 
 router.post('/request-document', authCheck, createRequest);
-router.get('request-documents/:count', authCheck, listRequest)
-router.get('/request-document/:req_id', authCheck, readRequest);
-router.delete('/request-document/:req_id', authCheck, deleteRequest);
+// router.get('request-documents/:count', authCheck, listRequest)
+// router.get('/request-document/:req_id', authCheck, readRequest);
+// router.delete('/request-document/:req_id', authCheck, deleteRequest);
 
 
 
