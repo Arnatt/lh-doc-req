@@ -43,7 +43,8 @@ exports.readRequest = async (req, res) => {
                 r.receive_date,
                 r.status,
                 u.fname AS requester_fname,
-                u.lname AS requester_lname
+                u.lname AS requester_lname,
+                u.phone AS requester_phone
             FROM
                 request r
             LEFT JOIN
@@ -63,11 +64,13 @@ exports.readRequest = async (req, res) => {
         const [docDetailsRows] = await db.execute(
             `SELECT
                 ddr.docd_id AS doc_detail_id,
+                ddr.related_role,
                 ddr.related_patient_fname,
                 ddr.related_patient_lname,
                 ddr.from_date,
                 ddr.to_date,
-                ddr.doc_type AS document_name
+                ddr.doc_type AS document_name,
+                ddr.purpose
             FROM
                 document_detail_request ddr
             LEFT JOIN
@@ -86,6 +89,7 @@ exports.readRequest = async (req, res) => {
                     requester_fname: requestData.requester_fname,
                     requester_lname: requestData.requester_lname,
                     request_date: requestData.request_date,
+                    requester_phone: requestData.requester_phone
                 },
                 documentDetails: docDetailsData, // รายละเอียดเอกสารแต่ละรายการ
                 status: requestData.status,

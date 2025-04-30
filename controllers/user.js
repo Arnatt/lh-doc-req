@@ -4,13 +4,14 @@ exports.getUserProfile = async (req, res) => {
     try {
         const uid = req.user.id; // ดึง user id จาก JWT ที่แนบมากับ req
 
-        const [rows] = await db.promise().execute(
+        const [rows] = await db.execute(
             `SELECT
                 uid,
                 fname,
                 lname,
-                gender,
+                title,
                 house_no,
+                village_no,
                 alley,
                 street,
                 subdistrict,
@@ -38,10 +39,32 @@ exports.getUserProfile = async (req, res) => {
 exports.listRequest = async (req, res) => {
     try {
         const { count } = req.params;
-        const uid = req.user.id; // <--- ดึง user id จาก JWT
+        const uid = req.user.id;
+        console.log('Count:', count, 'UID:', uid);
 
-        const [rows] = await db.promise().execute(
-            'SELECT * FROM request WHERE uid = ? ORDER BY request_date DESC LIMIT ?',
+        const [rows] = await db.execute(
+            `
+            SELECT
+                r.req_id,
+                r.request_date,
+                GROUP_CONCAT(DISTINCT ddr.doc_type SEPARATOR ', ') AS requested_documents,
+                GROUP_CONCAT(DISTINCT CONCAT(ddr.related_patient_fname, ' ', ddr.related_patient_lname) SEPARATOR '; ') AS related_patients,
+                r.status,
+                r.receive_date
+            FROM
+                request r
+            LEFT JOIN
+                document_main dm ON r.req_id = dm.req_id
+            LEFT JOIN
+                document_detail_request ddr ON dm.doc_id = ddr.doc_id
+            WHERE
+                r.uid = ?
+            GROUP BY
+                r.req_id, r.request_date, r.status, r.receive_date
+            ORDER BY
+                r.request_date DESC
+            LIMIT ?;
+            `,
             [uid, parseInt(count)]
         );
 
@@ -51,7 +74,7 @@ exports.listRequest = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error fetching user requests:', error); // เพิ่ม console.error เพื่อดู Error ใน Log
+        console.error('Error fetching user requests:', error);
         res.status(500).json({ message: 'Server Error' });
     }
 };

@@ -63,26 +63,26 @@ exports.createRequest = async (req, res) => {
     }
 }
 
-// exports.listRequest = async (req, res) => {
-//     try {
-//         const { count } = req.params;
-//         const uid = req.user.id; // <--- ดึง user id จาก JWT
+exports.listRequest = async (req, res) => {
+    try {
+        const { count } = req.params;
+        const uid = req.user.id; // <--- ดึง user id จาก JWT
 
-//         const [rows] = await db.promise().execute(
-//             'SELECT * FROM request WHERE uid = ? ORDER BY request_date DESC LIMIT ?',
-//             [uid, parseInt(count)]
-//         );
+        const [rows] = await db.promise().execute(
+            'SELECT * FROM request WHERE uid = ? ORDER BY request_date DESC LIMIT ?',
+            [uid, parseInt(count)]
+        );
 
-//         res.status(200).json({
-//             message: "Fetch user-specific requests successfully",
-//             data: rows
-//         });
+        res.status(200).json({
+            message: "Fetch user-specific requests successfully",
+            data: rows
+        });
 
-//     } catch (error) {
-//         console.log(error);
-//         res.status(500).json({ message: 'Server Error' });
-//     }
-// };
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
 
 
 // exports.readRequest = async (req, res) => {
