@@ -126,3 +126,72 @@ exports.updateUserProfile = async (req, res) => {
         res.status(500).json({ message: 'Server Error' });
     }
 }
+
+exports.submitRequest = async (req, res) => {
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        const {
+            requesterType,
+            patientDetails,
+            selectedDocuments, // ตอนนี้จะเป็น Array ของ Label แล้ว
+            requestDateRange,
+            purpose,
+            otherPurpose,
+            companyName,
+            relativeRelation,
+        } = req.body;
+        const uid = req.user.id;
+
+        // บันทึกข้อมูลหลักของคำร้องขอ
+        const [requestResult] = await connection.execute(
+            `INSERT INTO request (uid, request_date, status)
+             VALUES (?, NOW(), 'กำลังดำเนินการ')`,
+            [uid]
+        );
+        const reqId = requestResult.insertId;
+
+        // วนลูปเพื่อบันทึกเอกสารแต่ละรายการ (ใช้ Label ที่ส่งมา)
+        for (const docLabel of selectedDocuments) {
+            const [docMainResult] = await connection.execute(
+                `INSERT INTO document_main (req_id, uid)
+                 VALUES (?, ?)`,
+                [reqId, uid]
+            );
+            const docId = docMainResult.insertId;
+
+            await connection.execute(
+                `INSERT INTO document_detail_request (doc_id, related_role, related_is, related_patient_id, related_patient_fname, related_patient_lname, patient_phone, company_name, doc_type, from_date, to_date, purpose)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    docId,
+                    requesterType === 'ญาติผู้ป่วย' ? 'ญาติผู้ป่วย' : (requesterType === 'ตัวแทนบริษัท' ? 'ตัวแทนบริษัท' : (requesterType === 'ผู้ป่วย' ? 'ผู้ป่วย' : '')),
+                    requesterType === 'ญาติผู้ป่วย' ? relativeRelation || '' : '',
+                    patientDetails.idCard || '',
+                    patientDetails.name ? patientDetails.name.split(' ')[0] : '',
+                    patientDetails.name ? patientDetails.name.split(' ').slice(1).join(' ') : '',
+                    patientDetails.phone || '',
+                    companyName || '',
+                    docLabel, // ใช้ Label ที่ส่งมาจาก Frontend โดยตรง
+                    requestDateRange.from || null,
+                    requestDateRange.to || null,
+                    purpose
+                ]
+            );
+        }
+
+        await connection.commit();
+        connection.release();
+        res.status(201).json({ message: 'บันทึกคำร้องขอเอกสารสำเร็จ', requestId: reqId });
+
+    } catch (error) {
+        if (connection) {
+            await connection.rollback();
+            connection.release();
+        }
+        console.error('Error submitting request:', error);
+        res.status(500).json({ message: 'เกิดข้อผิดพลาดในการบันทึกคำร้องขอเอกสาร' });
+    }
+};
+
