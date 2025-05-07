@@ -142,14 +142,14 @@ exports.submitRequest = async (req, res) => {
             companyName,
             relativeRelation,
         } = req.body;
-        console.log('Request body:', req.body);
+        // console.log('Request body:', req.body);
 
         const uid = req.user.id;
 
         // 1. Insert into request table
         const [requestResult] = await connection.execute(
             `INSERT INTO request (uid, request_date, status)
-             VALUES (?, NOW(), 'กำลังดำเนินการ')`,
+             VALUES (?, NOW(), 'รอดำเนินการ')`,
             [uid]
         );
         const reqId = requestResult.insertId;
@@ -213,5 +213,34 @@ exports.submitRequest = async (req, res) => {
         res.status(500).json({ message: 'เกิดข้อผิดพลาดในการบันทึกคำร้องขอเอกสาร' });
     } finally {
         if (connection) connection.release();
+    }
+};
+
+exports.cancelRequest = async (req, res) => {
+    try {
+        const requestId = req.params.id;
+        const uid = req.user.id; // ดึง user id จาก JWT ที่แนบมากับ req
+
+        // ตรวจสอบว่าผู้ใช้มีสิทธิ์ในการยกเลิกคำขอนี้หรือไม่
+        const [requestRows] = await db.execute(
+            `SELECT * FROM request WHERE req_id = ? AND uid = ?`,
+            [requestId, uid]
+        );
+
+        if (requestRows.length === 0) {
+            return res.status(404).json({ message: 'ไม่พบคำขอ หรือคุณไม่มีสิทธิ์ในการยกเลิกคำขอนี้' });
+        }
+
+        // อัปเดตสถานะคำขอเป็น "ยกเลิกคำร้อง"
+        await db.execute(
+            `UPDATE request SET status = 'ยกเลิกคำร้อง' WHERE req_id = ?`,
+            [requestId]
+        );
+
+        res.status(200).json({ message: 'คำขอถูกยกเลิกเรียบร้อยแล้ว' });
+
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการยกเลิกคำขอ:', error);
+        res.status(500).json({ message: 'ไม่สามารถยกเลิกคำขอได้', error: error.message });
     }
 };

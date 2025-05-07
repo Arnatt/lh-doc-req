@@ -5,7 +5,7 @@ const { adminCheck } = require('../middleware/authCheck');
 
 
 router.get('/requests', adminCheck ,listAllRequest);
-router.get('/requests/:id', adminCheck, readRequest);
+router.get('/request/:id', adminCheck, readRequest);
 router.put('/requests/:id', adminCheck, updateRequest)
 
 module.exports = router;

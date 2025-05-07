@@ -22,7 +22,14 @@ exports.listAllRequest = async (req, res) => {
             LEFT JOIN
                 document_detail_request ddr ON dm.doc_id = ddr.doc_id
             ORDER BY
+                 CASE r.status
+                    WHEN 'รอดำเนินการ' THEN 0
+                    WHEN 'กำลังดำเนินการ' THEN 1
+                    WHEN 'ดำเนินการเรียบร้อย' THEN 2
+                    ELSE 3
+                END,
                 r.request_date DESC
+
         `);
         res.status(200).json({ message: "Fetch requests successfully", data: rows });
     } catch (error) {
