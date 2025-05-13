@@ -80,7 +80,7 @@ exports.loginAdmin = async (req, res) => {
 
         // ตรวจสอบผู้ดูแลระบบจากฐานข้อมูล (สมมติว่ามีตารางชื่อ 'admin')
         const [rows] = await db.execute(
-            'SELECT admin_id, username, password FROM admin WHERE username = ?',
+            'SELECT admin_id, username, password, role, fname, lname FROM admin WHERE username = ?',
             [username]
         );
 
@@ -100,9 +100,9 @@ exports.loginAdmin = async (req, res) => {
             adminId: admin.admin_id,
             username: admin.username,
             role: admin.role,
-            fname: admin.fname, // เพิ่ม fname
-            lname: admin.lname, // เพิ่ม lname
-            isAdmin: true// เพิ่ม flag เพื่อระบุว่าเป็นผู้ดูแลระบบ
+            fname: admin.fname,
+            lname: admin.lname,
+            isAdmin: true
         };
 
         // สร้าง token
